@@ -5,7 +5,18 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// WARNING: Render free tier has ephemeral storage!
+// Files created here will be deleted on restart.
+// For production, use a database or external storage.
 const CONFIG_FILE = path.join(__dirname, 'currentlyConfig.json');
+
+// In-memory storage as fallback
+let memoryConfig = {
+    code: 'print("Hi")',
+    timestamp: new Date().toISOString(),
+    version: "1.0"
+};
 
 // Middleware
 app.use(cors());
@@ -15,24 +26,32 @@ app.use(express.json());
 async function initializeConfig() {
     try {
         await fs.access(CONFIG_FILE);
+        const data = await fs.readFile(CONFIG_FILE, 'utf8');
+        memoryConfig = JSON.parse(data);
+        console.log('Loaded existing configuration file');
     } catch {
         const defaultConfig = {
             code: 'print("Hi")',
             timestamp: new Date().toISOString(),
             version: "1.0"
         };
-        await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
-        console.log('📝 Created default configuration file');
+        memoryConfig = defaultConfig;
+        try {
+            await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+            console.log('Created default configuration file');
+        } catch (writeErr) {
+            console.log('Could not write to disk, using memory storage only');
+        }
     }
 }
 
 // GET - Serve configuration
 app.get('/currentlyConfig.json', async (req, res) => {
     try {
-        const data = await fs.readFile(CONFIG_FILE, 'utf8');
+        // Always serve from memory (most up-to-date)
         res.header('Content-Type', 'application/json');
-        res.send(data);
-        console.log('📤 Configuration sent');
+        res.send(JSON.stringify(memoryConfig, null, 2));
+        console.log('Configuration sent:', memoryConfig.code.substring(0, 50) + '...');
     } catch (error) {
         res.status(500).json({ error: 'Failed to read configuration' });
     }
@@ -53,10 +72,20 @@ app.post('/set-config', async (req, res) => {
             version: version || "1.0"
         };
 
-        await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
-        console.log('✅ Configuration updated');
+        // Update memory first
+        memoryConfig = config;
+        console.log('configuration updated');
+        console.log('New Script:', code.substring(0, 100) + '...');
+
+        // Try to write to disk (will fail on Render free tier after restart)
+        try {
+            await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+            console.log('Configuration also saved to disk');
+        } catch (writeErr) {
+            console.log('Disk write failed (expected on Render free tier), using memory only');
+        }
         
-        res.json({ success: true, message: 'Configuration updated' });
+        res.json({ success: true, message: 'Configuration updated', note: 'Using in-memory storage' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to save configuration' });
     }
@@ -234,9 +263,9 @@ app.get('/', async (req, res) => {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎮 Roblox Config Server</h1>
+            <h1>triton</h1>
             <p>Live Configuration System</p>
-            <div class="status">🟢 Online & Running</div>
+            <div class="status">Online & Running</div>
         </div>
         
         <div class="content">
@@ -256,12 +285,12 @@ app.get('/', async (req, res) => {
             </div>
             
             <div class="code-section">
-                <h2>📝 Current Configuration Code</h2>
+                <h2>current configuration script</h2>
                 <div class="code-display">${config.code || 'No code set'}</div>
             </div>
             
             <div class="endpoints">
-                <h2>🔌 API Endpoints</h2>
+                <h2>Endpoints</h2>
                 <div class="endpoint">
                     <span class="method">GET</span>
                     <code>/currentlyConfig.json</code>
@@ -300,7 +329,7 @@ app.get('/', async (req, res) => {
 async function startServer() {
     await initializeConfig();
     app.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`port ${PORT}`);
     });
 }
 
