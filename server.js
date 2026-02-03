@@ -113,7 +113,7 @@ app.get('/', async (req, res) => {
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -264,7 +264,7 @@ app.get('/', async (req, res) => {
     <div class="container">
         <div class="header">
             <h1>triton</h1>
-            <p>Live Configuration System</p>
+            <p>Theory Configuration</p>
             <div class="status">Online & Running</div>
         </div>
         
@@ -294,12 +294,12 @@ app.get('/', async (req, res) => {
                 <div class="endpoint">
                     <span class="method">GET</span>
                     <code>/currentlyConfig.json</code>
-                    <p style="margin-top: 8px; color: #4a5568;">Fetch the current configuration</p>
+                    <p style="margin-top: 8px; color: #4b4b4b;">Fetch the current configuration</p>
                 </div>
                 <div class="endpoint">
                     <span class="method post">POST</span>
                     <code>/set-config</code>
-                    <p style="margin-top: 8px; color: #4a5568;">Update the configuration (JSON body required)</p>
+                    <p style="margin-top: 8px; color: #333333;">Update the configuration (JSON body required)</p>
                 </div>
             </div>
         </div>
