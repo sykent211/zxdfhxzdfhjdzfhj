@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+        html { scrollbar-width: thin; scrollbar-color: #222 #0a0a0a; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        
+        body {
+            background-color: #010101;
+            background-image: radial-gradient(ellipse 100% 50% at 50% 0%, rgba(255, 255, 255, 0.18) 0%, transparent 80%);
+            color: #ffffff;
+            height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+        
+        /* Security Overlay */
+        #security-block {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 999999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        #security-block.active {
+            display: flex;
+        }
+        
+        .security-warning {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff4444;
+            margin-bottom: 30px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .security-text {
+            font-size: 1.2rem;
+            color: #888;
+            text-align: center;
+        }
+        
+        #splash-screen {
+            position: fixed; inset: 0; background: #010101;
+            background-image: radial-gradient(ellipse 100% 50% at 50% 0%, rgba(255, 255, 255, 0.18) 0%, transparent 80%);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            transition: background 1s ease, opacity 0.6s ease;
+        }
+        .logo-anim { font-size: 5rem; font-weight: 700; letter-spacing: -4px; font-family: 'Space Grotesk'; }
+        .t-part { opacity: 0; font-size: 5rem; animation: tFade 0.8s ease 0.5s forwards; }
+        .heory-part { opacity: 0; display: inline-block; transform: translateX(-20px); animation: heorySlide 0.8s ease 1.6s forwards; }
+        @keyframes tFade { to { opacity: 1; } }
+        @keyframes heorySlide { to { opacity: 1; transform: translateX(0); } }
+        
+        #auth-container {
+            background: #0c0c0c; border: 1px solid #1a1a1a; border-radius: 14px; padding: 50px;
+            width: 100%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            display: none; opacity: 0; transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; z-index: 100;
+        }
+        #auth-container.active { display: block; opacity: 1; transform: translateY(0); }
+        .auth-header { font-weight: 700; font-size: 1.8rem; margin-bottom: 5px; }
+        .auth-sub { color: #666; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 35px; }
+        .group { text-align: left; margin-bottom: 20px; }
+        .group label { display: block; color: #555; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+        input, textarea, select {
+            width: 100%; background: #050505; border: 1px solid #1a1a1a; border-radius: 8px;
+            padding: 16px; color: #fff; font-size: 0.9rem; outline: none; transition: 0.3s;
+        }
+        #auth-error {
+            color: #ff4444; font-size: 0.8rem; font-weight: 700; height: 0; opacity: 0;
+            overflow: hidden; transition: 0.3s; text-align: center; margin-top: -10px; margin-bottom: 20px;
+        }
+        input.valid-key { border-color: #4ade80 !important; box-shadow: 0 0 10px rgba(74, 222, 128, 0.3) !important; }
+        input.invalid { border-color: #ff4444 !important; box-shadow: 0 0 10px rgba(255, 68, 68, 0.2) !important; }
+        select {
+            appearance: none; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23444' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: calc(100% - 15px) center;
+        }
+        input:focus, select:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); }
+        .btn { width: 100%; padding: 18px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; transition: 0.3s; }
+        .btn-white { background: #fff; color: #000; margin-top: 15px; }
+        .btn-white:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        .toggle { margin-top: 30px; font-size: 0.8rem; color: #333; }
+        .toggle span { color: #888; cursor: pointer; text-decoration: underline; }
+        #dashboard { width: 100vw; height: 100vh; display: none; flex-direction: row; align-items: stretch; }
+        .sidebar { background: rgba(8, 8, 8, 0.7); border-right: 1px solid #151515; padding: 40px 20px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(15px); width: 280px; flex-shrink: 0; }
+        .sidebar-top { display: flex; flex-direction: column; gap: 10px; }
+        .nav-item { padding: 15px 20px; font-size: 0.75rem; font-weight: 800; color: #444; cursor: pointer; border-radius: 12px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-item.active { background: #fff; color: #000; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        .nav-item:hover:not(.active) { color: #888; background: rgba(255,255,255,0.02); }
+        .main-content { flex-grow: 1; padding: 60px; overflow-y: auto; font-family: 'Space Grotesk', sans-serif; position: relative; }
+        .theory-title { font-size: 6rem; font-weight: 900; letter-spacing: 15px; text-align: center; margin-bottom: 5px; opacity: 0.9; }
+        .neon-bar { width: 120px; height: 4px; background: #fff; margin: 0 auto 70px; border-radius: 10px; box-shadow: 0 0 20px #fff; animation: barPulse 2s infinite alternate; }
+        @keyframes barPulse { from { box-shadow: 0 0 10px #fff; width: 80px; } to { box-shadow: 0 0 40px #fff; width: 180px; } }
+        .module { background: #0c0c0c; border: 1px solid #1a1a1a; border-radius: 20px; padding: 35px; margin-bottom: 25px; }
+        .module-tag { font-size: 0.6rem; color: #444; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; display: block; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-left: 15px; box-shadow: 0 0 8px #4ade80; }
+        .username-big { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; text-transform: capitalize; }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th { text-align: left; font-size: 0.6rem; color: #333; padding-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .admin-table td { padding: 15px 0; border-bottom: 1px solid #111; font-size: 0.85rem; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
+        .badge-red { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
+        .badge-green { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .badge-blue { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .action-btn { background: #111; border: 1px solid #222; color: #999; padding: 8px 14px; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 0.7rem; transition: 0.2s; font-weight: 600; }
+        .action-btn:hover:not(:disabled) { background: #222; color: #fff; }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; color: #fff !important; border-color: rgba(255, 255, 255, 0.3) !important; }
+        .logs-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 25px; }
+        .log-item { padding: 15px; background: #080808; border-radius: 12px; margin-bottom: 12px; border-left: 3px solid #fff; }
+        .video-preview { width: 100%; border-radius: 20px; border: 1px solid #1a1a1a; overflow: hidden; background: #000; box-shadow: 0 0 30px rgba(255,255,255,0.05); }
+        video { width: 100%; display: block; }
+        .tab-view { display: none; width: 100%; animation: fadeUp 0.5s ease forwards; }
+        .tab-view.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #status-alert { opacity: 0; color: #fff; font-size: 0.75rem; margin-top: 15px; font-weight: 700; text-align: center; transition: 0.3s; text-transform: uppercase; }
+        #days-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 10000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: #0c0c0c; padding: 40px; border-radius: 20px; border: 1px solid #1a1a1a; width: 400px; text-align: center; }
+        .tier-main { font-size: 1.1rem; font-weight: 900; color: #fff; }
+        .admin-tier { color: #ff4444 !important; }
+        
+        .config-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+        }
+        .config-label {
+            font-size: 0.65rem; color: #666; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+        }
+        .config-name-input {
+            flex: 1; background: #080808; border: 1px solid #1a1a1a;
+            border-radius: 8px; padding: 10px 14px; color: #fff;
+            font-size: 0.8rem; outline: none;
+        }
+        .config-name-input:focus {
+            border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        .add-config-btn {
+            background: #111; border: 1px solid #222; color: #fff;
+            width: 36px; height: 36px; border-radius: 8px;
+            font-size: 1.2rem; font-weight: 300; cursor: pointer;
+            transition: 0.3s; display: flex; align-items: center;
+            justify-content: center;
+        }
+        .add-config-btn:hover {
+            background: #222; transform: translateY(-2px);
+        }
+        .save-btn {
+            background: #fff; color: #000; padding: 12px 20px;
+            border-radius: 8px; font-weight: 700; cursor: pointer;
+            border: none; font-size: 0.8rem; transition: all 0.3s;
+            min-width: 110px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,255,255,0.1);
+        }
+        .save-btn.saved {
+            background: #4ade80; color: #000;
+        }
+        .lua-container {
+            background: #080808; border: 1px solid #1a1a1a;
+            border-radius: 12px; padding: 18px; margin-bottom: 18px;
+        }
+        textarea#lua-main {
+            color: #fff !important; line-height: 1.6;
+        }
+        #generated-key-text {
+            color: #fff !important;
+        }
+        .saved-configs {
+            background: #080808; border: 1px solid #1a1a1a;
+            border-radius: 12px; padding: 18px;
+            max-height: 530px; overflow-y: auto;
+        }
+        .config-item {
+            background: #0a0a0a; padding: 12px 15px;
+            border-radius: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between;
+            align-items: center; border: 1px solid transparent;
+            transition: 0.2s; cursor: pointer;
+        }
+        .config-item:hover {
+            border-color: #333;
+        }
+        .config-item-name {
+            font-size: 0.8rem; font-weight: 600; color: #fff;
+        }
+        .config-item-actions {
+            display: flex; gap: 5px;
+        }
+        .config-tabs {
+            display: flex; gap: 5px; margin-bottom: 20px;
+            border-bottom: 1px solid #1a1a1a; padding-bottom: 10px;
+            overflow-x: auto; min-height: 40px;
+        }
+        .config-tab {
+            padding: 8px 12px; background: #080808;
+            border: 1px solid #1a1a1a; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; color: #666;
+            display: flex; align-items: center; gap: 8px;
+            height: 34px; flex-shrink: 0;
+        }
+        .config-tab:hover {
+            background: #111; color: #888;
+        }
+        .config-tab.active {
+            background: #fff; color: #000; border-color: #fff;
+        }
+        .config-tab-close {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #333; display: flex; align-items: center;
+            justify-content: center; font-size: 0.6rem;
+            color: #888; transition: all 0.2s;
+            flex-shrink: 0; cursor: pointer; line-height: 1;
+        }
+        .config-tab-close:hover {
+            background: #ff4444; color: #fff;
+        }
+        .button-container {
+            display: flex; justify-content: flex-end;
+            gap: 12px; align-items: center;
+        }
+        .download-btn {
+            background: #111; border: 1px solid #222; color: #fff;
+            padding: 12px 20px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.8rem; transition: all 0.3s;
+            min-width: 110px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .download-btn:hover {
+            background: #222; transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Security Block Overlay -->
+    <div id="security-block">
+        <div class="security-warning">⚠️ ACCESS DENIED</div>
+        <div class="security-text">Developer Tools Detected<br>Redirecting in 3 seconds...</div>
+    </div>
+    
+    <div id="splash-screen">
+        <div class="logo-anim"><span class="t-part">T</span><span class="heory-part">heory</span></div>
+    </div>
+    
+    <div id="auth-container">
+        <h2 id="auth-header">Log in</h2>
+        <p class="auth-sub">Identity Authentication</p>
+        <div id="auth-error">Invalid Credentials</div>
+        <form onsubmit="event.preventDefault(); v89f2a();" autocomplete="off">
+            <div class="group"><label>Username</label><input type="text" id="u-in" placeholder="Username"></div>
+            <div class="group" style="margin-bottom: 10px;"><label>Password</label><input type="password" id="p-in" placeholder="Password"></div>
+            <div id="l-wrap" class="group" style="display:none; margin-bottom: 10px;"><label>License Key</label><input type="text" id="l-in" placeholder="License Key" oninput="f73a9e()"></div>
+            <button type="submit" id="auth-trigger" class="btn btn-white">LOG IN</button>
+        </form>
+        <p class="toggle" id="toggle-container">Don't have an account? <span onclick="x29f0a()">Sign up</span></p>
+    </div>
+    
+    <div id="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <div class="nav-item active" onclick="z90f2b(this, 'dash')">Dashboard</div>
+                <div class="nav-item adm-only" style="display:none" onclick="z90f2b(this, 'admin')">Admin Management</div>
+                <div class="nav-item adm-only" style="display:none" onclick="z90f2b(this, 'lics')">Generated Licenses</div>
+                <div class="nav-item" onclick="z90f2b(this, 'logs')">Updates Logs</div>
+                <div class="nav-item" onclick="z90f2b(this, 'cloud')">Cloud Configs</div>
+            </div>
+            <div class="nav-item" style="color:#444; border: 1px solid #111;" onclick="logout()">Logout</div>
+        </aside>
+        <main class="main-content">
+            <h1 class="theory-title">THEORY</h1>
+            <div class="neon-bar"></div>
+            
+            <div id="tab-dash" class="tab-view active">
+                <div class="module">
+                    <span class="module-tag">Account Identity</span>
+                    <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: end;">
+                        <div>
+                            <span style="font-size:0.7rem; color:#444; text-transform:uppercase;">Alias</span>
+                            <h3 class="username-big"><span id="user-name">user</span><div class="status-dot"></div></h3>
+                        </div>
+                        <div class="tier-container">
+                            <span style="font-size:0.7rem; color:#444; text-transform:uppercase;">Tier</span>
+                            <h3 id="user-tier" class="tier-main">[User]</h3>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="module">
+                        <span class="module-tag">Internal License</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div id="internal-license-display" style="font-family:'JetBrains Mono'; color:#555;">-</div>
+                            <button id="ik-btn-toggle" class="action-btn" onclick="p9a02f('ik')">Show Key</button>
+                            <button id="ik-btn-copy" class="action-btn" onclick="q02f9a('ik')">Copy</button>
+                        </div>
+                    </div>
+                    <div class="module">
+                        <span class="module-tag">Script License</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div id="script-license-display" style="font-family:'JetBrains Mono'; color:#555;">-</div>
+                            <button id="sk-btn-toggle" class="action-btn" onclick="p9a02f('sk')">Show Key</button>
+                            <button id="sk-btn-copy" class="action-btn" onclick="q02f9a('sk')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tab-admin" class="tab-view">
+                <div class="module">
+                    <span class="module-tag">Live Access Management</span>
+                    <table class="admin-table">
+                        <thead><tr><th>User</th><th>Status</th><th>Days Left</th><th>Operations</th></tr></thead>
+                        <tbody id="user-list"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="tab-lics" class="tab-view">
+                <div class="module">
+                    <span class="module-tag">Generate New License</span>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; align-items: end; margin-bottom: 30px;">
+                        <div class="group"><label>Amount</label><input type="number" id="gen-amount" value="1"></div>
+                        <div class="group"><label>Key Type</label><select id="gen-type"><option value="internal">Internal Key</option><option value="script">Script Key</option></select></div>
+                        <div class="group"><label>Days to Expire</label><input type="number" id="gen-days" value="30"></div>
+                        <button class="btn btn-white" style="margin-bottom: 20px;" onclick="k92v8a()">GENERATE KEYS</button>
+                    </div>
+                    <div id="generated-key-display" style="margin-bottom:30px; padding:20px; background:#080808; border-radius:12px; border:1px solid #1a1a1a; display:none;">
+                        <span style="font-size:0.7rem; color:#555; display:block; margin-bottom:10px;">Latest Generated:</span>
+                        <div id="generated-key-text" style="font-family:'JetBrains Mono'; font-size:0.85rem; color:#fff; margin-bottom:15px;"></div>
+                        <button id="modal-copy-all-btn" class="action-btn" style="width:100%;" onclick="l02f9a()">COPY KEYS</button>
+                    </div>
+                    <span class="module-tag">Key Database Tracking</span>
+                    <table class="admin-table">
+                        <thead><tr><th>License Key</th><th>Type</th><th>Days</th><th>Claimed By</th><th>Actions</th></tr></thead>
+                        <tbody id="admin-keys-list"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="tab-logs" class="tab-view">
+                <div class="logs-grid">
+                    <div class="module">
+                        <span class="module-tag">System Changelog</span>
+                        <div class="log-item"><div style="font-weight:700; color:#ffffff;">v25.0 - Enhanced Security</div><div style="font-size:0.75rem; color:#555;">Added developer tools protection with debugger and auto-redirect.</div></div>
+                        <div class="log-item"><div style="font-weight:700; color:#ffffff;">[SCRIPT] - Web/Table Configuration</div><div style="font-size:0.75rem; color:#555;">Table - Uses configuration in table; Website - Uses live configuration from website.</div></div>
+                    </div>
+                    <div class="video-preview"><video autoplay muted loop><source src="preview.mp4" type="video/mp4"></video></div>
+                </div>
+            </div>
+            
+            <div id="tab-cloud" class="tab-view">
+                <div class="module">
+                    <div style="display:grid; grid-template-columns: 2.5fr 1fr; gap: 25px;">
+                        <div>
+                            <div class="config-header">
+                                <span class="config-label">Config</span>
+                                <input type="text" class="config-name-input" id="config-name-input" placeholder="Enter config name...">
+                                <button class="add-config-btn" onclick="saveConfig()" title="Save Config">+</button>
+                            </div>
+                            
+                            <div class="config-tabs" id="config-tabs-container"></div>
+                            
+                            <div id="active-config-content">
+                                <div class="lua-container">
+                                    <span class="module-tag">Theory</span>
+                                    <textarea id="lua-main" spellcheck="false" style="width:100%; height:340px; font-family:'JetBrains Mono', monospace; font-size:0.7rem; background:transparent; color:#fff; border:none; resize:none; outline:none;">shared.Theory = {
+    ["License"] = "",
+    ["Config Method"] = "Website", -- Table, Website
+
+    ["KeyBinds"] = {
+        ["Target"] = "C",
+        ["Triggerbot"] = "C",
+        ["Camlock"] = "C",
+        ["Speed"] = "G",
+        ["ESP"] = "P",
+    },
+
+    ["Anti Trip"] = {
+        ["Enabled"] = false
+    },
+
+    ["Targeting"] = {
+        ["Mode"] = "Automatic",
+        ["Color"] = Color3.fromRGB(255, 255, 255),
+        ["Target Color"] = Color3.fromRGB(0, 191, 0),
+        ["Invisible Check"] = true,
+        ["Extra"] = {
+            ["Grabbed"] = true,
+            ["Knocked"] = true
+        }
+    },
+
+    ["Checks"] = {
+        ["Camlock"] = { 
+            ["Knocked"] = true,
+            ["Grabbed"] = true,
+        },
+        ["Triggerbot"] = {
+            ["Knocked"] = true,
+            ["Grabbed"] = true
+        }
+    },
+
+    ["Silent"] = {
+        ["Enabled"] = true,
+        ["Hit Part"] = "Closest Part",
+        ["Prediction"] = {
+            ["X"] = 0,
+            ["Y"] = 0,
+        },
+        ["Nearest Point"] = {
+            ["Enabled"] = true,
+            ["Scale"] = 5
+        }
+    },
+    ["Triggerbot"] = {
+        ["Enabled"] = false,
+        ["Delay"] = 0,
+    },
+    ["Camlock"] = {
+        ["Enabled"] = false,
+        ["Hit Part"] = "HumanoidRootPart",
+        ["Smoothing"] = 97,
+        ["Style"] = "Linear",
+        ["Prediction"] = {
+            ["X"] = 0,
+            ["Y"] = 0 
+        }
+    },
+
+    ["Modification"] = {
+        ["Speed Modification"] = {
+            ["Enabled"] = true,
+            ["Speed"] = 300,
+            ["Character"] = {
+                ["Multiplier"] = 2,
+                ["Low Health"] = {
+                    ["Enabled"] = false
+                },
+            },
+        },
+        ["Bullet Modification"] = {
+            ["Enabled"] = true,
+            ["X"] = 0,
+            ["Y"] = 0
+        },
+        ["Range Modification"] = {
+            ["Enabled"] = true,
+            ["Weapons"] = {
+                ["Double-Barrel SG"] = true,
+                ["[Revolver]"] = true,
+                ["[TacticalShotgun]"] = true
+            }
+        },
+        ["Spread Modification"] = {
+            ["Enabled"] = true,
+            ["Weapons"] = {
+                ["[Double-Barrel SG]"] = 1,
+                ["[TacticalShotgun]"] = 1
+            }
+        },
+        ["Client Redirection"] = {
+            ["Enabled"] = false
+        },
+        ["Gun Skin Changer"] = {
+            ["Enabled"] = true,
+            ["Weapons"] = {
+                ["[Double-Barrel SG]"] = "Galaxy",
+                ["[Revolver]"] = "Galaxy",
+                ["[TacticalShotgun]"] = "Luck",
+                ["[Knife]"] = "Golden Age Tanto"
+            }
+        },
+        ["Delay"] = {
+            ["Enabled"] = true,
+            ["Weapons"] = {
+                ["[Double-Barrel SG]"] = 5,
+                ["[Revolver]"] = 5,
+                ["[TacticalShotgun]"] = 5
+            }
+        }
+    },
+}</textarea>
+                                </div>
+                                
+                                <div class="button-container">
+                                    <button class="download-btn" onclick="downloadConfig()">DOWNLOAD</button>
+                                    <button id="save-btn" class="save-btn" onclick="saveAndExecuteConfig()">SAVE</button>
+                                </div>
+                                <p id="status-alert">Operation Successful!</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="saved-configs">
+                                <span class="module-tag">Saved Configs</span>
+                                <div id="configs-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="days-modal">
+        <div class="modal-content">
+            <span class="module-tag">Modify Access</span>
+            <input type="number" id="days-input" style="text-align:center; margin-bottom:25px;">
+            <div style="display:flex; gap:10px;"><button class="btn btn-white" onclick="p90f2f()">SET DAYS</button><button class="btn" style="background:#111; color:#fff" onclick="q90f2g()">CANCEL</button></div>
+        </div>
+    </div>
+    
+    <script>
+        const SERVER_URL = 'https://zxdfhxzdfhjdzfhj.onrender.com';
+        let ikv = false, skv = false;
+        const _app = { 
+            isReg: false, 
+            loggedUser: null, 
+            activeUserIdx: -1, 
+            lastGeneratedKey: "", 
+            saveBtnState: "save",
+            activeConfigTab: 0,
+            configTabs: [],
+            securityTriggered: false
+        };
+
+        // ==========================================
+        // SECURITY PROTECTION SYSTEM
+        // ==========================================
+        
+        let devToolsOpen = false;
+        
+        // Block keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Block F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                triggerSecurity();
+                return false;
+            }
+            
+            // Block Ctrl+Shift+I (DevTools)
+            if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+                e.preventDefault();
+                triggerSecurity();
+                return false;
+            }
+            
+            // Block Ctrl+Shift+J (Console)
+            if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+                e.preventDefault();
+                triggerSecurity();
+                return false;
+            }
+            
+            // Block Ctrl+Shift+C (Inspect Element)
+            if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                e.preventDefault();
+                triggerSecurity();
+                return false;
+            }
+            
+            // Block Ctrl+U (View Source)
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                triggerSecurity();
+                return false;
+            }
+        });
+        
+        // Block right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Detect DevTools by size
+        function detectDevTools() {
+            const widthDiff = window.outerWidth - window.innerWidth;
+            const heightDiff = window.outerHeight - window.innerHeight;
+            
+            // Detect if DevTools is open (significant size difference)
+            const devToolsDetected = widthDiff > 200 || heightDiff > 200;
+            
+            if (devToolsDetected && !devToolsOpen) {
+                devToolsOpen = true;
+                triggerSecurity();
+            }
+        }
+        
+        // Trigger security protocol - SILENT REDIRECT
+        function triggerSecurity() {
+            if (_app.securityTriggered) return;
+            _app.securityTriggered = true;
+            
+            // NO overlay, just silent redirect
+            // Start infinite debugger loop to freeze DevTools
+            setInterval(function() {
+                debugger;
+            }, 50);
+            
+            // Redirect to about:blank after 1-2 seconds (random)
+            const redirectDelay = Math.floor(Math.random() * 1000) + 1000; // 1-2 seconds
+            setTimeout(function() {
+                window.location.href = 'about:blank';
+            }, redirectDelay);
+        }
+        
+        // Check for DevTools every second - but only AFTER page is fully loaded
+        setTimeout(function() {
+            setInterval(detectDevTools, 1000);
+        }, 3000);
+        
+        // ==========================================
+        // MAIN APPLICATION CODE
+        // ==========================================
+
+        function logout() {
+            location.reload();
+        }
+
+        async function saveAndExecuteConfig() {
+            const codeContent = document.getElementById('lua-main').value;
+            const btn = document.getElementById('save-btn');
+            
+            if (!codeContent || codeContent.trim() === '') {
+                _showStatus('Cannot deploy empty configuration');
+                return;
+            }
+
+            const configName = document.getElementById('config-name-input').value.trim() || "Unnamed Config";
+            saveConfigToLocal(configName, codeContent);
+            
+            const config = { 
+                code: codeContent, 
+                timestamp: new Date().toISOString(), 
+                version: "1.0",
+                configName: configName
+            };
+
+            try {
+                _showStatus('Saving & Deploying...');
+                btn.textContent = 'SAVING...';
+                
+                const response = await fetch(SERVER_URL + '/set-config', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    btn.textContent = 'SAVED';
+                    btn.classList.add('saved');
+                    _app.saveBtnState = 'saved';
+                    _showStatus('Config saved & deployed!');
+                    
+                    setTimeout(() => {
+                        if (_app.saveBtnState === 'saved') {
+                            btn.textContent = 'SAVE';
+                            btn.classList.remove('saved');
+                            _app.saveBtnState = 'save';
+                        }
+                    }, 2000);
+                } else {
+                    btn.textContent = 'SAVE';
+                    _showStatus('Deploy failed: ' + response.status);
+                }
+            } catch (error) {
+                btn.textContent = 'SAVE';
+                _showStatus('Connection failed: ' + error.message);
+            }
+        }
+
+        function saveConfigToLocal(name, code) {
+            if (!code || code.trim() === '') {
+                _showStatus('Cannot save empty config');
+                return;
+            }
+            
+            const key = `configs_${_app.loggedUser.u}`;
+            let list = [];
+            try { 
+                const stored = localStorage.getItem(key); 
+                if (stored) list = JSON.parse(_decrypt(stored)); 
+            } catch(e) {}
+            
+            const existingIndex = list.findIndex(c => c.name === name);
+            if (existingIndex !== -1) {
+                list[existingIndex].code = code;
+                list[existingIndex].lastModified = new Date().toISOString();
+            } else {
+                list.push({
+                    name: name, 
+                    code: code,
+                    created: new Date().toISOString(),
+                    lastModified: new Date().toISOString()
+                });
+            }
+            
+            localStorage.setItem(key, _encrypt(JSON.stringify(list)));
+            loadConfigsList();
+            loadConfigTabs();
+            _showStatus('"' + name + '" saved locally!');
+        }
+
+        function saveConfig() {
+            const nameInput = document.getElementById('config-name-input');
+            const luaContent = document.getElementById('lua-main').value;
+            const name = nameInput.value.trim() || "Unnamed Config";
+            
+            saveConfigToLocal(name, luaContent);
+            nameInput.value = '';
+        }
+        
+        function loadConfigsList() {
+            const key = `configs_${_app.loggedUser.u}`;
+            let list = [];
+            try { 
+                const stored = localStorage.getItem(key); 
+                if (stored) list = JSON.parse(_decrypt(stored)); 
+            } catch(e) {}
+            
+            const container = document.getElementById('configs-list');
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#444; padding:20px; font-size:0.7rem;">No saved configs</div>';
+                return;
+            }
+            
+            container.innerHTML = list.map((c, i) => `
+                <div class="config-item">
+                    <span class="config-item-name">${c.name}</span>
+                    <div class="config-item-actions">
+                        <button class="action-btn" onclick="loadConfigContent(${i})">LOAD</button>
+                        <button class="action-btn" style="color:#ff4444" onclick="deleteConfig(${i})">✕</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            _app.configTabs = list;
+        }
+        
+        function loadConfigTabs() {
+            const container = document.getElementById('config-tabs-container');
+            if (_app.configTabs.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = _app.configTabs.map((c, i) => `
+                <div class="config-tab ${i === _app.activeConfigTab ? 'active' : ''}" onclick="switchConfigTab(${i})">
+                    ${c.name}
+                    <span class="config-tab-close" onclick="event.stopPropagation(); closeConfigTab(${i})">×</span>
+                </div>
+            `).join('');
+            
+            if (_app.configTabs[_app.activeConfigTab]) {
+                document.getElementById('lua-main').value = _app.configTabs[_app.activeConfigTab].code;
+                document.getElementById('config-name-input').value = _app.configTabs[_app.activeConfigTab].name;
+            }
+        }
+        
+        function closeConfigTab(index) {
+            const key = `configs_${_app.loggedUser.u}`;
+            let list = [];
+            try { 
+                const stored = localStorage.getItem(key); 
+                if (stored) list = JSON.parse(_decrypt(stored)); 
+            } catch(e) {}
+            
+            const configName = list[index]?.name || 'Config';
+            list.splice(index, 1);
+            localStorage.setItem(key, _encrypt(JSON.stringify(list)));
+            
+            _app.configTabs = list;
+            if (_app.activeConfigTab >= list.length) {
+                _app.activeConfigTab = Math.max(0, list.length - 1);
+            }
+            
+            loadConfigsList();
+            loadConfigTabs();
+            _showStatus('"' + configName + '" tab closed');
+        }
+        
+        function switchConfigTab(index) {
+            _app.activeConfigTab = index;
+            loadConfigTabs();
+            
+            if (_app.configTabs[index]) {
+                document.getElementById('lua-main').value = _app.configTabs[index].code;
+                document.getElementById('config-name-input').value = _app.configTabs[index].name;
+                _showStatus('Switched to: ' + _app.configTabs[index].name);
+            }
+        }
+        
+        function loadConfigContent(i) {
+            const key = `configs_${_app.loggedUser.u}`;
+            let list = [];
+            try { 
+                const stored = localStorage.getItem(key); 
+                if (stored) list = JSON.parse(_decrypt(stored)); 
+            } catch(e) {}
+            
+            if (list[i]) {
+                document.getElementById('lua-main').value = list[i].code;
+                document.getElementById('config-name-input').value = list[i].name;
+                
+                const tabIndex = _app.configTabs.findIndex(c => c.name === list[i].name);
+                if (tabIndex !== -1) {
+                    switchConfigTab(tabIndex);
+                }
+                
+                _showStatus('Loaded: ' + list[i].name);
+            }
+        }
+        
+        function deleteConfig(i) {
+            const key = `configs_${_app.loggedUser.u}`;
+            let list = [];
+            try { 
+                const stored = localStorage.getItem(key); 
+                if (stored) list = JSON.parse(_decrypt(stored)); 
+            } catch(e) {}
+            
+            const name = list[i]?.name || 'Unknown';
+            list.splice(i, 1);
+            localStorage.setItem(key, _encrypt(JSON.stringify(list)));
+            
+            _app.configTabs = list;
+            if (_app.activeConfigTab >= list.length) {
+                _app.activeConfigTab = Math.max(0, list.length - 1);
+            }
+            
+            loadConfigsList();
+            loadConfigTabs();
+            _showStatus('"' + name + '" deleted');
+        }
+        
+        function downloadConfig() {
+            const content = document.getElementById('lua-main').value;
+            const name = document.getElementById('config-name-input').value.trim() || "Theory_Config";
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none'; 
+            a.href = url; 
+            a.download = name + ".lua";
+            document.body.appendChild(a); 
+            a.click();
+            window.URL.revokeObjectURL(url); 
+            document.body.removeChild(a);
+            _showStatus('Downloaded as ' + name + '.lua');
+        }
+
+        function _encrypt(data) { 
+            if (!data) return ''; 
+            let result = ''; 
+            for (let i = 0; i < data.length; i++) 
+                result += String.fromCharCode(data.charCodeAt(i) ^ 0x42); 
+            return btoa(result); 
+        }
+        
+        function _decrypt(encrypted) { 
+            if (!encrypted) return ''; 
+            try { 
+                const decoded = atob(encrypted); 
+                let result = ''; 
+                for (let i = 0; i < decoded.length; i++) 
+                    result += String.fromCharCode(decoded.charCodeAt(i) ^ 0x42); 
+                return result; 
+            } catch (e) { 
+                return ''; 
+            } 
+        }
+        
+        function randStr(l) { 
+            const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; 
+            let r = ''; 
+            for(let i=0; i<l; i++) 
+                r += c.charAt(Math.floor(Math.random()*c.length)); 
+            return r; 
+        }
+        
+        function loadK() { 
+            const s = localStorage.getItem('xxx_keys'); 
+            return s ? JSON.parse(_decrypt(s)) : []; 
+        }
+        
+        function saveK(k) { 
+            localStorage.setItem('xxx_keys', _encrypt(JSON.stringify(k))); 
+        }
+        
+        function loadU() { 
+            const s = localStorage.getItem('t_db'); 
+            return s ? JSON.parse(_decrypt(s)) : [{u:'Admin', p:'123456', a:true, b:false, d:"INF", ik: "Theory-Admin", sk: "Theory-Admin", licenseKey: "Theoryadminkey"}]; 
+        }
+        
+        function saveU(db) { 
+            localStorage.setItem('t_db', _encrypt(JSON.stringify(db))); 
+        }
+        
+        function _startApp() { 
+            setTimeout(() => { 
+                const splash = document.getElementById('splash-screen'); 
+                const auth = document.getElementById('auth-container'); 
+                if (splash) { 
+                    splash.style.opacity = '0'; 
+                    setTimeout(() => { 
+                        splash.style.display = 'none'; 
+                        if (auth) auth.classList.add('active'); 
+                    }, 600); 
+                } 
+            }, 2500); 
+        }
+        
+        window.onload = _startApp;
+        
+        function _setError(msg) { 
+            const err = document.getElementById('auth-error'); 
+            if(msg === "") { 
+                err.style.height = "0"; 
+                err.style.opacity = "0"; 
+            } else { 
+                err.innerText = msg; 
+                err.style.height = "auto"; 
+                err.style.opacity = "1"; 
+            } 
+        }
+        
+        window.x29f0a = function() { 
+            _setError(""); 
+            _app.isReg = !_app.isReg; 
+            document.getElementById('auth-header').innerText = _app.isReg ? "Sign up" : "Log in"; 
+            document.getElementById('auth-trigger').innerText = _app.isReg ? "REGISTER" : "SIGN IN"; 
+            document.getElementById('l-wrap').style.display = _app.isReg ? "block" : "none"; 
+            document.getElementById('l-in').classList.remove('valid-key', 'invalid'); 
+        };
+        
+        window.f73a9e = function() { 
+            const input = document.getElementById('l-in'); 
+            input.classList.remove('invalid', 'valid-key'); 
+            const val = input.value; 
+            if (val === "") return; 
+            if (val === "Theoryadminkey") { 
+                input.classList.add('valid-key'); 
+                return; 
+            } 
+            const keysDB = loadK(); 
+            const key = keysDB.find(k => k.key === val && !k.used);
+            if (key && !key.blacklisted) { 
+                input.classList.add('valid-key'); 
+            } else { 
+                input.classList.add('invalid'); 
+            } 
+        };
+        
+        window.v89f2a = function() {
+            _setError(""); 
+            const uInput = document.getElementById('u-in'), 
+                  pInput = document.getElementById('p-in'), 
+                  lInput = document.getElementById('l-in');
+            const u = uInput.value, p = pInput.value, l = lInput.value;
+            const db = loadU(), lics = loadK();
+            
+            if (_app.isReg) {
+                let kData = l === "Theoryadminkey" ? {key:"Theoryadminkey", tier:"Admin", type:"internal", days:"INF"} : lics.find(k => k.key === l && !k.used);
+                if (!kData) { _setError("Invalid License Key"); return; }
+                if (kData.blacklisted) { _setError("License Key is blacklisted"); return; }
+                if (db.find(x => x.u === u)) { _setError("Username taken"); return; }
+                
+                let fIK, fSK; 
+                const isA = kData.tier === "Admin";
+                if (isA) { 
+                    fIK = "Theory-Admin"; 
+                    fSK = "Theory-Admin"; 
+                } else { 
+                    if (kData.type === 'internal') { 
+                        fIK = kData.key; 
+                        fSK = randStr(16); 
+                    } else { 
+                        fIK = "None"; 
+                        fSK = kData.key; 
+                    } 
+                }
+                
+                const newUser = { u, p, a: isA, b: false, d: kData.days || 30, ik: fIK, sk: fSK, licenseKey: l };
+                if (l !== "Theoryadminkey") { 
+                    kData.used = true; 
+                    kData.usedBy = u; 
+                    saveK(lics); 
+                }
+                db.push(newUser); 
+                saveU(db); 
+                r89f2b(u, isA, false);
+            } else {
+                const user = db.find(x => x.u === u && x.p === p);
+                if (user) { 
+                    if (user.b && !user.a) { 
+                        _setError("Account Blacklisted"); 
+                        return; 
+                    } 
+                    r89f2b(user.u, user.a, user.b); 
+                } else { 
+                    _setError("Invalid Credentials"); 
+                }
+            }
+        };
+        
+        function r89f2b(user, isAdmin, isBlacklisted) { 
+            const userDB = loadU(); 
+            const userData = userDB.find(x => x.u === user); 
+            _app.loggedUser = userData; 
+            const auth = document.getElementById('auth-container'); 
+            const dashboard = document.getElementById('dashboard'); 
+            if (auth) { 
+                auth.classList.remove('active'); 
+                setTimeout(() => { 
+                    auth.style.display = 'none'; 
+                    if (dashboard) { 
+                        dashboard.style.display = 'flex'; 
+                        s89f2c(isAdmin, isBlacklisted); 
+                    } 
+                }, 600); 
+            } 
+        }
+        
+        function s89f2c(isAdmin, isBlacklisted) {
+            const user = _app.loggedUser; 
+            document.getElementById('user-name').textContent = user.u;
+            const tEl = document.getElementById('user-tier');
+            
+            if (isAdmin) { 
+                tEl.textContent = '[Administrator]'; 
+                tEl.className = 'tier-main admin-tier'; 
+                tEl.style.color = '#ff4444'; 
+                document.querySelectorAll('.adm-only').forEach(el => el.style.display = 'block'); 
+            } else { 
+                tEl.textContent = '[User]'; 
+                tEl.className = 'tier-main'; 
+                tEl.style.color = '#fff'; 
+            }
+            
+            const ikDisplay = document.getElementById('internal-license-display');
+            const skDisplay = document.getElementById('script-license-display');
+            
+            if (!user.ik || user.ik === "None" || user.ik === "") {
+                ikDisplay.textContent = "-";
+                document.getElementById('ik-btn-toggle').disabled = true;
+                document.getElementById('ik-btn-copy').disabled = true;
+            } else {
+                ikDisplay.textContent = "Theory-******";
+                document.getElementById('ik-btn-toggle').disabled = false;
+                document.getElementById('ik-btn-copy').disabled = false;
+            }
+            
+            if (!user.sk || user.sk === "None" || user.sk === "") {
+                skDisplay.textContent = "-";
+                document.getElementById('sk-btn-toggle').disabled = true;
+                document.getElementById('sk-btn-copy').disabled = true;
+            } else {
+                skDisplay.textContent = user.sk.substring(0, 5) + "-*****";
+                document.getElementById('sk-btn-toggle').disabled = false;
+                document.getElementById('sk-btn-copy').disabled = false;
+            }
+            
+            loadConfigsList();
+            loadConfigTabs();
+            
+            if (isAdmin) { 
+                u89f2e(); 
+                v89f2f(); 
+            }
+        }
+        
+        window.p9a02f = function(type) {
+            const user = _app.loggedUser; 
+            const disp = document.getElementById(type === 'ik' ? 'internal-license-display' : 'script-license-display'); 
+            const btn = document.getElementById(type === 'ik' ? 'ik-btn-toggle' : 'sk-btn-toggle');
+            
+            if (type === 'ik') { 
+                ikv = !ikv; 
+                disp.innerText = ikv ? user.ik : "Theory-******"; 
+                btn.innerText = ikv ? "Hide Key" : "Show Key"; 
+            } else { 
+                skv = !skv; 
+                disp.innerText = skv ? user.sk : user.sk.substring(0, 5) + "-*****"; 
+                btn.innerText = skv ? "Hide Key" : "Show Key"; 
+            }
+        };
+        
+        window.q02f9a = function(type) {
+            const user = _app.loggedUser; 
+            const val = type === 'ik' ? user.ik : user.sk; 
+            const btn = document.getElementById(type === 'ik' ? 'ik-btn-copy' : 'sk-btn-copy');
+            if (val !== "None" && val) { 
+                navigator.clipboard.writeText(val).then(() => { 
+                    btn.innerText = "Copied!"; 
+                    btn.disabled = true; 
+                    _showStatus("Key copied!"); 
+                }); 
+            }
+        };
+        
+        function u89f2e() { 
+            const db = loadU(); 
+            document.getElementById('user-list').innerHTML = db.map((u, i) => `
+                <tr>
+                    <td>${u.u} ${u.a ? '[ADM]' : ''}</td>
+                    <td><span class="badge ${u.b ? 'badge-red' : 'badge-green'}">${u.b ? 'BLACKLISTED' : 'ACTIVE'}</span></td>
+                    <td>${u.d}</td>
+                    <td>
+                        <button class="action-btn" onclick="blacklistUser(${i})">${u.b?'Unblacklist':'Blacklist'}</button>
+                        <button class="action-btn" onclick="x89f2h(${i})">Set Days</button>
+                        <button class="action-btn" style="color:#ff4444" onclick="removeUser(${i})">Remove</button>
+                    </td>
+                </tr>
+            `).join(''); 
+        }
+        
+        window.blacklistUser = function(i) {
+            const db = loadU(); 
+            const lics = loadK();
+            if (db[i].a) { 
+                _showStatus('Cannot blacklist admin!'); 
+                return; 
+            }
+            db[i].b = !db[i].b;
+            const wasBlacklisted = db[i].b;
+            const licenseKey = db[i].licenseKey;
+            lics.forEach(l => { 
+                if (l.key === licenseKey) { 
+                    l.blacklisted = wasBlacklisted; 
+                } 
+            });
+            saveU(db); 
+            saveK(lics); 
+            u89f2e(); 
+            v89f2f();
+            _showStatus(wasBlacklisted ? 'User blacklisted!' : 'User unblacklisted!');
+            if (db[i].u === _app.loggedUser.u && wasBlacklisted) { 
+                setTimeout(() => location.reload(), 1000); 
+            }
+        };
+        
+        window.removeUser = function(i) { 
+            const db = loadU(); 
+            const lics = loadK(); 
+            if (db[i].a && db[i].licenseKey === "Theoryadminkey") { 
+                _showStatus('Cannot remove admin!'); 
+                return; 
+            }
+            const targetU = db[i].u; 
+            const licenseKey = db[i].licenseKey;
+            const keyIndex = lics.findIndex(l => l.key === licenseKey);
+            if (keyIndex !== -1) { 
+                lics.splice(keyIndex, 1); 
+            }
+            saveK(lics); 
+            db.splice(i, 1); 
+            saveU(db); 
+            u89f2e(); 
+            v89f2f(); 
+            _showStatus('User & key removed!');
+            if (targetU === _app.loggedUser.u) { 
+                setTimeout(() => location.reload(), 1000); 
+            }
+        };
+        
+        function v89f2f() { 
+            const keys = loadK(); 
+            const listEl = document.getElementById('admin-keys-list'); 
+            if(listEl) listEl.innerHTML = keys.map((k, i) => `
+                <tr>
+                    <td>${k.key}</td>
+                    <td><span class="badge badge-blue">${k.type}</span></td>
+                    <td>${k.days || '30'}</td>
+                    <td>${k.usedBy || '<span style="color:#444">Available</span>'}</td>
+                    <td>
+                        <button class="action-btn" style="color:${k.blacklisted ? '#4ade80' : '#ff4444'}" onclick="toggleBlacklistKey(${i})">
+                            ${k.blacklisted ? 'Unblacklist' : 'Blacklist'}
+                        </button>
+                        <button class="action-btn" style="color:#ff4444" onclick="z89f2j(${i})">Delete</button>
+                    </td>
+                </tr>
+            `).join(''); 
+        }
+        
+        window.toggleBlacklistKey = function(i) {
+            const keys = loadK();
+            keys[i].blacklisted = !keys[i].blacklisted;
+            saveK(keys); 
+            v89f2f();
+            _showStatus(keys[i].blacklisted ? 'Key blacklisted!' : 'Key unblacklisted!');
+        };
+        
+        window.z89f2j = function(i) { 
+            const keys = loadK(); 
+            const key = keys[i];
+            if (key.usedBy) {
+                const db = loadU();
+                const userIndex = db.findIndex(u => u.u === key.usedBy);
+                if (userIndex !== -1) { 
+                    db.splice(userIndex, 1); 
+                    saveU(db); 
+                    u89f2e(); 
+                }
+            }
+            keys.splice(i, 1); 
+            saveK(keys); 
+            v89f2f(); 
+            _showStatus('Key deleted!');
+        };
+        
+        window.k92v8a = function() {
+            const amt = parseInt(document.getElementById('gen-amount').value) || 1;
+            const type = document.getElementById('gen-type').value;
+            const days = parseInt(document.getElementById('gen-days').value) || 30;
+            const lics = loadK(); 
+            let news = [];
+            for (let i = 0; i < amt; i++) { 
+                let k = type === 'internal' ? 'Theory-' + randStr(6) : randStr(16); 
+                lics.push({ 
+                    key: k, 
+                    tier: 'User', 
+                    type: type, 
+                    used: false, 
+                    usedBy: null, 
+                    days: days, 
+                    blacklisted: false 
+                }); 
+                news.push(k); 
+            }
+            saveK(lics); 
+            _app.lastGeneratedKey = news.join('\n'); 
+            document.getElementById('generated-key-text').innerHTML = news.join('<br>'); 
+            document.getElementById('generated-key-display').style.display = 'block'; 
+            v89f2f(); 
+            _showStatus("Generated " + amt + " key(s)!");
+        };
+        
+        window.l02f9a = function() { 
+            if (_app.lastGeneratedKey) { 
+                navigator.clipboard.writeText(_app.lastGeneratedKey).then(() => { 
+                    const btn = document.getElementById('modal-copy-all-btn'); 
+                    btn.innerText = "Copied!"; 
+                    btn.disabled = true; 
+                    _showStatus("Keys copied!"); 
+                }); 
+            } 
+        };
+        
+        function x89f2h(i) { 
+            _app.activeUserIdx = i; 
+            const db = loadU(); 
+            document.getElementById('days-input').value = db[i].d === "INF" ? 9999 : db[i].d; 
+            document.getElementById('days-modal').style.display = 'flex'; 
+        }
+        
+        window.q90f2g = function() { 
+            document.getElementById('days-modal').style.display = 'none'; 
+        };
+        
+        window.p90f2f = function() { 
+            const db = loadU(); 
+            db[_app.activeUserIdx].d = document.getElementById('days-input').value; 
+            saveU(db); 
+            u89f2e(); 
+            window.q90f2g(); 
+        };
+        
+        window.z90f2b = function(el, name) { 
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active')); 
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); 
+            document.getElementById(`tab-${name}`).classList.add('active'); 
+            if (el) el.classList.add('active'); 
+        };
+        
+        function _showStatus(msg) { 
+            const el = document.getElementById('status-alert'); 
+            el.innerText = msg; 
+            el.style.opacity = '1'; 
+            setTimeout(() => { 
+                el.style.opacity = '0'; 
+            }, 2000); 
+        }
+    </script>
+</body>
+</html>
